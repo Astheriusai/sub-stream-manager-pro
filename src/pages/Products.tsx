@@ -1,5 +1,6 @@
 
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PlusCircle, Loader2 } from 'lucide-react';
 import {
   Card,
@@ -25,7 +26,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -35,9 +35,11 @@ import { ProductsTable } from '@/components/products/ProductsTable';
 import type { Product, ProductFormData } from '@/components/products/types';
 
 export default function Products() {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   
   const { 
@@ -67,6 +69,11 @@ export default function Products() {
       allowed_durations: [1, 3, 6, 12],
       status: true,
     });
+  };
+
+  const handleAddClick = () => {
+    resetForm();
+    setIsAddDialogOpen(true);
   };
 
   const handleAddSubmit = (e: React.FormEvent) => {
@@ -133,8 +140,21 @@ export default function Products() {
     resetForm();
   };
 
+  const handleDeleteClick = (product: Product) => {
+    setSelectedProduct(product);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (!selectedProduct) return;
+    deleteProduct(selectedProduct.id);
+    setIsDeleteDialogOpen(false);
+    setSelectedProduct(null);
+  };
+
   const handleManageAccounts = (product: Product) => {
-    // TODO: Navigate to accounts filtered by this product
+    // Navigate to accounts filtered by this product
+    navigate(`/accounts?product=${product.id}`);
     toast({
       title: 'Gestionar Cuentas',
       description: `Redirigiendo a cuentas de ${product.name}`,
@@ -164,29 +184,10 @@ export default function Products() {
             Gestiona los tipos de suscripciones que ofreces
           </p>
         </div>
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Añadir Producto
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Añadir Nuevo Producto</DialogTitle>
-              <DialogDescription>
-                Crea un nuevo tipo de suscripción para ofrecer a tus clientes
-              </DialogDescription>
-            </DialogHeader>
-            <ProductForm
-              onSubmit={handleAddSubmit}
-              formData={formData}
-              setFormData={setFormData}
-              isLoading={isAdding}
-              toggleDuration={toggleDuration}
-            />
-          </DialogContent>
-        </Dialog>
+        <Button onClick={handleAddClick}>
+          <PlusCircle className="mr-2 h-4 w-4" />
+          Añadir Producto
+        </Button>
       </div>
 
       <Card>
@@ -195,12 +196,31 @@ export default function Products() {
             products={products || []}
             isLoading={isLoading}
             onEdit={handleEdit}
-            onDelete={deleteProduct}
+            onDelete={handleDeleteClick}
             onManageAccounts={handleManageAccounts}
             isDeletingProduct={isDeleting}
           />
         </CardContent>
       </Card>
+
+      {/* Add Product Dialog */}
+      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Añadir Nuevo Producto</DialogTitle>
+            <DialogDescription>
+              Crea un nuevo tipo de suscripción para ofrecer a tus clientes
+            </DialogDescription>
+          </DialogHeader>
+          <ProductForm
+            onSubmit={handleAddSubmit}
+            formData={formData}
+            setFormData={setFormData}
+            isLoading={isAdding}
+            toggleDuration={toggleDuration}
+          />
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Product Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
@@ -220,6 +240,38 @@ export default function Products() {
           />
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción eliminará el producto "{selectedProduct?.name}". 
+              {/* Add warning about cascade delete if implemented */}
+              Si hay cuentas o ventas asociadas a este producto, también serán eliminadas.
+              Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteConfirm}
+              className="bg-red-600 hover:bg-red-700"
+              disabled={isDeleting}
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Eliminando...
+                </>
+              ) : (
+                "Eliminar"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
