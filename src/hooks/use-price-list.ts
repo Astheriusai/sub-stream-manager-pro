@@ -22,10 +22,23 @@ export function usePriceList(subscriberId: string | undefined) {
       
       if (error) throw error;
       
-      return data.map(item => ({
-        ...item,
-        product_name: item.products && typeof item.products === 'object' ? item.products.name : undefined
-      })) as PriceList[];
+      return data.map(item => {
+        // Check if products exists and properly handle its structure
+        // It could be an array or an object depending on how Supabase returns it
+        let productName;
+        if (item.products) {
+          if (Array.isArray(item.products) && item.products.length > 0) {
+            productName = item.products[0].name;
+          } else if (typeof item.products === 'object') {
+            productName = (item.products as any).name;
+          }
+        }
+        
+        return {
+          ...item,
+          product_name: productName
+        };
+      }) as PriceList[];
     },
     enabled: !!subscriberId,
   });
