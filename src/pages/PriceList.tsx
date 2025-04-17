@@ -34,15 +34,15 @@ export default function PriceList() {
       <Card>
         <CardContent className="p-6">
           <PriceTable 
-            priceList={priceList || []} 
+            prices={priceList || []} 
             isLoading={isLoading} 
-            onEditClick={handleEditClick} 
+            onEdit={handleEditClick} 
           />
         </CardContent>
       </Card>
 
       <AddPriceDialog 
-        open={isAddDialogOpen} 
+        isOpen={isAddDialogOpen} 
         onOpenChange={setIsAddDialogOpen} 
         subscriberId={CURRENT_SUBSCRIBER_ID}
         products={products || []}
@@ -50,9 +50,9 @@ export default function PriceList() {
 
       {selectedPrice && (
         <EditPriceDialog 
-          open={isEditDialogOpen} 
+          isOpen={isEditDialogOpen} 
           onOpenChange={setIsEditDialogOpen} 
-          priceItem={selectedPrice}
+          selectedPrice={selectedPrice}
           products={products || []}
         />
       )}

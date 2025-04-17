@@ -8,15 +8,16 @@ import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
-import { PriceList } from "./types";
+import { PriceList, Product } from "./types";
 
 type EditPriceDialogProps = {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  selectedPrice: PriceList | null;
+  selectedPrice: PriceList;
+  products: Product[];
 };
 
-export function EditPriceDialog({ isOpen, onOpenChange, selectedPrice }: EditPriceDialogProps) {
+export function EditPriceDialog({ isOpen, onOpenChange, selectedPrice, products }: EditPriceDialogProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [price, setPrice] = useState(selectedPrice?.price.toString() || '');
