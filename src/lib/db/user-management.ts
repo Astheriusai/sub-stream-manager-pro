@@ -49,4 +49,3 @@ export const createCreatorUser = async () => {
     return { success: false, message: 'Error al crear el usuario creador: ' + error };
   }
 };
-

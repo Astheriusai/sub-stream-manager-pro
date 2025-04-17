@@ -89,60 +89,96 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const signUp = async (name: string, email: string, password: string) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
+    try {
+      // Get the worker role ID
+      const { data: workerRole, error: roleError } = await supabase
+        .from('roles')
+        .select('id')
+        .eq('name', 'worker')
+        .single();
+        
+      if (roleError) {
+        console.error('Error fetching role:', roleError);
+        return { error: { message: 'Error fetching user role' } };
+      }
 
-    if (error) {
+      // Register the user in auth
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: window.location.origin + '/login',
+          data: {
+            name
+          }
+        }
+      });
+
+      if (error) {
+        console.error('Signup error:', error);
+        return { error };
+      }
+
+      // Create entry in our custom users table
+      const { error: insertError } = await supabase
+        .from('users')
+        .insert([
+          { 
+            id: data.user?.id,
+            name,
+            email,
+            role_id: workerRole.id,
+            subscriber_id: null
+          }
+        ]);
+
+      if (insertError) {
+        console.error('Error creating user record:', insertError);
+        return { error: insertError };
+      }
+
+      return { error: null };
+    } catch (error) {
+      console.error('Unexpected signup error:', error);
       return { error };
     }
-
-    // Create entry in our custom users table
-    const { error: insertError } = await supabase
-      .from('users')
-      .insert([
-        { 
-          id: data.user?.id,
-          name,
-          email,
-          role_id: 'creator', // First user is always creator
-          subscriber_id: null
-        }
-      ]);
-
-    return { error: insertError };
   };
 
   const signIn = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    if (error) {
+      if (error) {
+        console.error('Login error:', error);
+        return { error };
+      }
+
+      // Get user details from our custom users table
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', data.user.id)
+        .single();
+        
+      if (userError) {
+        console.error('Error fetching user data:', userError);
+        return { error: userError };
+      }
+      
+      setState((prev) => ({ 
+        ...prev, 
+        session: data.session,
+        user: userData as User
+      }));
+
+      return { error: null };
+    } catch (error) {
+      console.error('Unexpected login error:', error);
       return { error };
     }
-
-    // Get user details from our custom users table
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', data.user.id)
-      .single();
-      
-    if (userError) {
-      console.error('Error fetching user data:', userError);
-      return { error: userError };
-    }
-    
-    setState((prev) => ({ 
-      ...prev, 
-      session: data.session,
-      user: userData as User
-    }));
-
-    return { error: null };
   };
 
   const signOut = async () => {

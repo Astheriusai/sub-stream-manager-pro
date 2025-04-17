@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -26,8 +27,9 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  const { signIn, loading } = useAuth();
+  const { signIn } = useAuth();
   const navigate = useNavigate();
   
   const {
@@ -40,8 +42,11 @@ export default function Login() {
 
   const onSubmit = async (data: LoginFormValues) => {
     try {
+      setIsSubmitting(true);
       const { error } = await signIn(data.email, data.password);
+      
       if (error) {
+        console.error('Login error:', error);
         toast({
           title: 'Error de inicio de sesión',
           description: error.message || 'Credenciales incorrectas',
@@ -51,11 +56,14 @@ export default function Login() {
         navigate('/');
       }
     } catch (error) {
+      console.error('Unexpected error:', error);
       toast({
         title: 'Error',
         description: 'Ocurrió un error durante el inicio de sesión',
         variant: 'destructive',
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -112,8 +120,8 @@ export default function Login() {
                 <p className="text-sm text-destructive">{errors.password.message}</p>
               )}
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? 'Iniciando sesión...' : 'Iniciar sesión'}
             </Button>
           </form>
         </CardContent>

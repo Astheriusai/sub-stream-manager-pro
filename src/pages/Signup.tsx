@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -32,8 +33,9 @@ type SignupFormValues = z.infer<typeof signupSchema>;
 export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  const { signUp, loading } = useAuth();
+  const { signUp } = useAuth();
   const navigate = useNavigate();
   
   const {
@@ -46,8 +48,11 @@ export default function Signup() {
 
   const onSubmit = async (data: SignupFormValues) => {
     try {
+      setIsSubmitting(true);
       const { error } = await signUp(data.name, data.email, data.password);
+      
       if (error) {
+        console.error('Signup error:', error);
         toast({
           title: 'Error de registro',
           description: error.message || 'No se pudo crear la cuenta',
@@ -56,16 +61,19 @@ export default function Signup() {
       } else {
         toast({
           title: 'Registro exitoso',
-          description: 'Tu cuenta ha sido creada correctamente',
+          description: 'Tu cuenta ha sido creada correctamente. Ahora puedes iniciar sesión.',
         });
         navigate('/login');
       }
     } catch (error) {
+      console.error('Unexpected error:', error);
       toast({
         title: 'Error',
         description: 'Ocurrió un error durante el registro',
         variant: 'destructive',
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -162,8 +170,8 @@ export default function Signup() {
                 <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
               )}
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Creando cuenta...' : 'Registrarse'}
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? 'Creando cuenta...' : 'Registrarse'}
             </Button>
           </form>
         </CardContent>
