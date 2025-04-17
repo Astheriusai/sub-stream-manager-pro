@@ -1,46 +1,28 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PlusCircle, Loader2 } from 'lucide-react';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from '@/components/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { useProducts } from '@/hooks/use-products';
-import { ProductForm } from '@/components/products/ProductForm';
 import { ProductsTable } from '@/components/products/ProductsTable';
+import { ProductsHeader } from '@/components/products/ProductsHeader';
+import { ProductDialogs } from '@/components/products/ProductDialogs';
+import { useProductDialogs } from '@/components/products/hooks/useProductDialogs';
 import type { Product, ProductFormData } from '@/components/products/types';
 
 export default function Products() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const {
+    isAddDialogOpen,
+    setIsAddDialogOpen,
+    isEditDialogOpen,
+    setIsEditDialogOpen,
+    isDeleteDialogOpen,
+    setIsDeleteDialogOpen,
+    selectedProduct,
+    setSelectedProduct,
+  } = useProductDialogs();
   
   const { 
     products, 
@@ -153,7 +135,6 @@ export default function Products() {
   };
 
   const handleManageAccounts = (product: Product) => {
-    // Navigate to accounts filtered by this product
     navigate(`/accounts?product=${product.id}`);
     toast({
       title: 'Gestionar Cuentas',
@@ -177,19 +158,8 @@ export default function Products() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Productos</h2>
-          <p className="text-muted-foreground">
-            Gestiona los tipos de suscripciones que ofreces
-          </p>
-        </div>
-        <Button onClick={handleAddClick}>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Añadir Producto
-        </Button>
-      </div>
-
+      <ProductsHeader onAddClick={handleAddClick} />
+      
       <Card>
         <CardContent className="p-6">
           <ProductsTable
@@ -203,75 +173,24 @@ export default function Products() {
         </CardContent>
       </Card>
 
-      {/* Add Product Dialog */}
-      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Añadir Nuevo Producto</DialogTitle>
-            <DialogDescription>
-              Crea un nuevo tipo de suscripción para ofrecer a tus clientes
-            </DialogDescription>
-          </DialogHeader>
-          <ProductForm
-            onSubmit={handleAddSubmit}
-            formData={formData}
-            setFormData={setFormData}
-            isLoading={isAdding}
-            toggleDuration={toggleDuration}
-          />
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit Product Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Editar Producto</DialogTitle>
-            <DialogDescription>
-              Actualiza la información del producto
-            </DialogDescription>
-          </DialogHeader>
-          <ProductForm
-            onSubmit={handleEditSubmit}
-            formData={formData}
-            setFormData={setFormData}
-            isLoading={isUpdating}
-            toggleDuration={toggleDuration}
-          />
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Esta acción eliminará el producto "{selectedProduct?.name}". 
-              {/* Add warning about cascade delete if implemented */}
-              Si hay cuentas o ventas asociadas a este producto, también serán eliminadas.
-              Esta acción no se puede deshacer.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleDeleteConfirm}
-              className="bg-red-600 hover:bg-red-700"
-              disabled={isDeleting}
-            >
-              {isDeleting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Eliminando...
-                </>
-              ) : (
-                "Eliminar"
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ProductDialogs
+        isAddDialogOpen={isAddDialogOpen}
+        setIsAddDialogOpen={setIsAddDialogOpen}
+        isEditDialogOpen={isEditDialogOpen}
+        setIsEditDialogOpen={setIsEditDialogOpen}
+        isDeleteDialogOpen={isDeleteDialogOpen}
+        setIsDeleteDialogOpen={setIsDeleteDialogOpen}
+        selectedProduct={selectedProduct}
+        formData={formData}
+        setFormData={setFormData}
+        handleAddSubmit={handleAddSubmit}
+        handleEditSubmit={handleEditSubmit}
+        handleDeleteConfirm={handleDeleteConfirm}
+        isAdding={isAdding}
+        isUpdating={isUpdating}
+        isDeleting={isDeleting}
+        toggleDuration={toggleDuration}
+      />
     </div>
   );
 }
