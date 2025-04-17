@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
@@ -44,6 +45,7 @@ type PriceList = {
 type Product = {
   id: string;
   name: string;
+  status: 'active' | 'inactive';
 };
 
 export default function PriceList() {
