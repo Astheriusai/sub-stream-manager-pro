@@ -1,31 +1,30 @@
 
-import { useState } from 'react';
-import { 
-  Card, 
-  CardContent, 
-  CardHeader, 
-  CardTitle, 
-  CardDescription 
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { PriceListHeader } from "@/components/price-list/PriceListHeader";
 import { PriceTable } from "@/components/price-list/PriceTable";
 import { AddPriceDialog } from "@/components/price-list/AddPriceDialog";
 import { EditPriceDialog } from "@/components/price-list/EditPriceDialog";
 import { usePriceList } from "@/hooks/use-price-list";
-import { PriceList as PriceListType } from "@/components/price-list/types";
+import { usePriceDialogs } from "@/hooks/use-price-dialogs";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 
-// This would typically come from an auth context
 const CURRENT_SUBSCRIBER_ID = "12345";
 
 export default function PriceList() {
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [selectedPrice, setSelectedPrice] = useState<PriceListType | null>(null);
-  const { toast } = useToast();
+  const {
+    isAddDialogOpen,
+    setIsAddDialogOpen,
+    isEditDialogOpen,
+    setIsEditDialogOpen,
+    isDeleteDialogOpen,
+    setIsDeleteDialogOpen,
+    selectedPrice,
+    setSelectedPrice,
+    handleAddClick,
+    handleEditClick,
+    handleDeleteClick
+  } = usePriceDialogs();
   
   const { 
     priceList, 
@@ -35,20 +34,6 @@ export default function PriceList() {
     updatePrice, 
     deletePrice 
   } = usePriceList(CURRENT_SUBSCRIBER_ID);
-
-  const handleAddClick = () => {
-    setIsAddDialogOpen(true);
-  };
-
-  const handleEditClick = (price: PriceListType) => {
-    setSelectedPrice(price);
-    setIsEditDialogOpen(true);
-  };
-
-  const handleDeleteClick = (price: PriceListType) => {
-    setSelectedPrice(price);
-    setIsDeleteDialogOpen(true);
-  };
 
   const handleDelete = async () => {
     if (!selectedPrice) return;

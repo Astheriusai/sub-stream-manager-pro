@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -16,9 +15,18 @@ type AddPriceDialogProps = {
   onOpenChange: (open: boolean) => void;
   subscriberId: string;
   products: Product[];
+  onSubmit: (productId: string, price: number) => Promise<void>;
+  isSubmitting: boolean;
 };
 
-export function AddPriceDialog({ isOpen, onOpenChange, subscriberId, products }: AddPriceDialogProps) {
+export function AddPriceDialog({ 
+  isOpen, 
+  onOpenChange, 
+  subscriberId, 
+  products, 
+  onSubmit,
+  isSubmitting 
+}: AddPriceDialogProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
@@ -74,11 +82,7 @@ export function AddPriceDialog({ isOpen, onOpenChange, subscriberId, products }:
       return;
     }
 
-    addPriceMutation.mutate({
-      subscriber_id: subscriberId,
-      product_id: formData.product_id,
-      price: parseFloat(formData.price),
-    });
+    onSubmit(formData.product_id, parseFloat(formData.price));
   };
 
   return (
@@ -126,8 +130,8 @@ export function AddPriceDialog({ isOpen, onOpenChange, subscriberId, products }:
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={addPriceMutation.isPending}>
-              {addPriceMutation.isPending ? (
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Guardando...
