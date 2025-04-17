@@ -47,9 +47,10 @@ const navItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
-  const { collapsed, setCollapsed } = useSidebar();
+  const { state, setOpen } = useSidebar();
   const { pathname } = useLocation();
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
+  const collapsed = state === "collapsed";
 
   return (
     <aside
@@ -147,7 +148,7 @@ export function AppSidebar() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => setCollapsed(!collapsed)}
+          onClick={() => setOpen(!collapsed)}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

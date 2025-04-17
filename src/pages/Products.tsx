@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { PlusCircle, Pencil, Database, Trash2, Info, Check, X, Loader2 } from 'lucide-react';
@@ -218,7 +217,7 @@ export default function Products() {
       base_price: parseFloat(formData.base_price),
       max_profiles: parseInt(formData.max_profiles),
       allowed_durations: formData.allowed_durations,
-      status: formData.status ? 'active' : 'inactive',
+      status: formData.status ? 'active' : 'inactive' as 'active' | 'inactive',
     };
 
     addProductMutation.mutate(productData);
@@ -245,7 +244,7 @@ export default function Products() {
       base_price: parseFloat(formData.base_price),
       max_profiles: parseInt(formData.max_profiles),
       allowed_durations: formData.allowed_durations,
-      status: formData.status ? 'active' : 'inactive',
+      status: formData.status ? 'active' : 'inactive' as 'active' | 'inactive',
     };
 
     updateProductMutation.mutate({ id: selectedProduct.id, data: productData });

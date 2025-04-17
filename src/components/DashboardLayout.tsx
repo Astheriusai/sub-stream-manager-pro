@@ -4,11 +4,11 @@ import { Outlet } from 'react-router-dom';
 import { AppSidebar } from './AppSidebar';
 import { AppHeader } from './AppHeader';
 import { SidebarProvider } from '@/components/ui/sidebar';
-import { useMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { Loader2 } from 'lucide-react';
 
 export function DashboardLayout() {
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
   const [isLoading, setIsLoading] = useState(true);
 
   // Simulate initial loading
@@ -29,7 +29,7 @@ export function DashboardLayout() {
   }
 
   return (
-    <SidebarProvider defaultCollapsed={isMobile}>
+    <SidebarProvider defaultOpen={!isMobile}>
       <div className="flex min-h-screen w-full bg-background">
         <AppSidebar />
         <div className="flex flex-col flex-1">
