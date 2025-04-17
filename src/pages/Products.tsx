@@ -122,9 +122,13 @@ export default function Products() {
     resetForm();
   };
 
-  const handleDeleteClick = (product: Product) => {
-    setSelectedProduct(product);
-    setIsDeleteDialogOpen(true);
+  // Fixed this function to handle string id instead of Product object
+  const handleDeleteClick = (id: string) => {
+    const product = products?.find(p => p.id === id);
+    if (product) {
+      setSelectedProduct(product);
+      setIsDeleteDialogOpen(true);
+    }
   };
 
   const handleDeleteConfirm = () => {

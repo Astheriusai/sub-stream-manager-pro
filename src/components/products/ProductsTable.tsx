@@ -17,7 +17,7 @@ interface ProductsTableProps {
   products: Product[];
   isLoading: boolean;
   onEdit: (product: Product) => void;
-  onDelete: (id: string) => void;
+  onDelete: (id: string) => void; // Changed from Product to string
   onManageAccounts: (product: Product) => void;
   isDeletingProduct: boolean;
 }
@@ -102,7 +102,7 @@ export function ProductsTable({
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => onDelete(product.id)}
+                  onClick={() => onDelete(product.id)} // Changed to pass only the id
                   disabled={isDeletingProduct}
                 >
                   {isDeletingProduct ? (
