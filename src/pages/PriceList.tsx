@@ -98,7 +98,7 @@ export default function PriceList() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('products')
-        .select('id, name')
+        .select('id, name, status')
         .eq('status', 'active')
         .order('name');
       
