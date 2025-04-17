@@ -22,6 +22,7 @@ import Roles from "./pages/Roles";
 import Marketplace from "./pages/Marketplace";
 import Settings from "./pages/Settings";
 import Trash from "./pages/Trash";
+import PriceList from "./pages/PriceList";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -48,6 +49,7 @@ const App = () => (
                 <Route path="/subscribers" element={<Subscribers />} />
                 <Route path="/roles" element={<Roles />} />
                 <Route path="/marketplace" element={<Marketplace />} />
+                <Route path="/price-list" element={<PriceList />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/trash" element={<Trash />} />
               </Route>

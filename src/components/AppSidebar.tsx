@@ -1,214 +1,180 @@
 
-import { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import {
-  LayoutDashboard,
-  Tv,
-  Database,
-  Users,
-  ShoppingCart,
-  UserCog,
-  Building2,
-  Shield,
-  Store,
+import { Link, useLocation } from 'react-router-dom';
+import { useSidebar } from '@/components/ui/sidebar';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { 
+  LayoutDashboard, 
+  Tv, 
+  Users, 
+  ShoppingCart, 
+  UserCog, 
+  Database, 
+  LucideIcon, 
+  ShieldCheck, 
+  Store, 
   Settings,
-  LogOut,
-  ChevronRight,
-  Trash2
+  Trash2,
+  DollarSign
 } from 'lucide-react';
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarHeader,
-  SidebarFooter,
-} from '@/components/ui/sidebar';
-import { useAuth } from '@/lib/auth';
+import { Button } from './ui/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
+import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+
+type NavItem = {
+  title: string;
+  href: string;
+  icon: LucideIcon;
+  submenu?: Array<{
+    title: string;
+    href: string;
+  }>;
+};
+
+const navItems: NavItem[] = [
+  { title: 'Dashboard', href: '/', icon: LayoutDashboard },
+  { title: 'Productos', href: '/products', icon: Tv },
+  { title: 'Cuentas', href: '/accounts', icon: Database },
+  { title: 'Clientes', href: '/customers', icon: Users },
+  { title: 'Ventas', href: '/sales', icon: ShoppingCart },
+  { title: 'Lista de Precios', href: '/price-list', icon: DollarSign },
+  { title: 'Usuarios', href: '/users', icon: UserCog },
+  { title: 'Suscriptores', href: '/subscribers', icon: Database },
+  { title: 'Roles y Permisos', href: '/roles', icon: ShieldCheck },
+  { title: 'Marketplace', href: '/marketplace', icon: Store },
+  { title: 'Configuración', href: '/settings', icon: Settings },
+  { title: 'Papelera', href: '/trash', icon: Trash2 },
+];
 
 export function AppSidebar() {
-  const { user, signOut } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [collapsed, setCollapsed] = useState(false);
-  
-  // Get initials for avatar
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase();
-  };
-
-  const menuItems = [
-    {
-      title: 'Dashboard',
-      path: '/',
-      icon: LayoutDashboard,
-    },
-    {
-      title: 'Productos',
-      path: '/products',
-      icon: Tv,
-    },
-    {
-      title: 'Cuentas',
-      path: '/accounts',
-      icon: Database,
-    },
-    {
-      title: 'Clientes',
-      path: '/customers',
-      icon: Users,
-    },
-    {
-      title: 'Ventas',
-      path: '/sales',
-      icon: ShoppingCart,
-    },
-    {
-      title: 'Usuarios',
-      path: '/users',
-      icon: UserCog,
-    },
-    {
-      title: 'Suscriptores',
-      path: '/subscribers',
-      icon: Building2,
-      roleRequired: 'creator',
-    },
-    {
-      title: 'Roles y Permisos',
-      path: '/roles',
-      icon: Shield,
-    },
-    {
-      title: 'Marketplace',
-      path: '/marketplace',
-      icon: Store,
-    },
-    {
-      title: 'Configuración',
-      path: '/settings',
-      icon: Settings,
-    },
-    {
-      title: 'Papelera',
-      path: '/trash',
-      icon: Trash2,
-    },
-  ].filter(item => {
-    // Filter out items that require specific roles
-    if (item.roleRequired === 'creator') {
-      return user?.role_id === 'creator';
-    }
-    return true;
-  });
-
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/login');
-  };
-
-  const toggleSidebar = () => {
-    setCollapsed(!collapsed);
-  };
+  const { collapsed, setCollapsed } = useSidebar();
+  const { pathname } = useLocation();
+  const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
 
   return (
-    <Sidebar
+    <aside
       className={cn(
-        "transition-all duration-300 ease-in-out border-r",
-        collapsed ? "w-[60px]" : "md:w-[240px] w-[240px]"
+        'fixed left-0 top-0 z-20 flex h-full flex-col border-r bg-card transition-all duration-300 ease-in-out',
+        collapsed ? 'w-16' : 'w-64'
       )}
     >
-      <SidebarHeader>
-        <div className="flex items-center justify-between p-4">
+      <div className="flex flex-none items-center justify-center h-16 border-b">
+        <Link to="/" className="flex items-center space-x-2">
           {!collapsed && (
-            <div className="text-lg font-bold">Stream Manager</div>
+            <span className="text-xl font-bold tracking-tight">StreamSeller</span>
           )}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleSidebar}
-            className={cn(
-              "rounded-full p-0 w-8 h-8",
-              collapsed && "mx-auto"
-            )}
-          >
-            <ChevronRight
-              className={cn(
-                "h-4 w-4 transition-transform",
-                collapsed ? "rotate-0" : "rotate-180"
-              )}
-            />
-          </Button>
-        </div>
-      </SidebarHeader>
-      
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={item.path}>
-                  <SidebarMenuButton
+        </Link>
+      </div>
+      <ScrollArea className="flex-1">
+        <nav className="flex flex-col gap-2 p-2">
+          {navItems.map((item) => (
+            item.submenu ? (
+              <Collapsible
+                key={item.href}
+                open={openSubmenu === item.href}
+                onOpenChange={(isOpen) => setOpenSubmenu(isOpen ? item.href : null)}
+              >
+                <CollapsibleTrigger asChild>
+                  <Button
+                    variant="ghost"
                     className={cn(
-                      location.pathname === item.path && "bg-primary/10"
+                      'justify-between h-10 w-full',
+                      openSubmenu === item.href && 'bg-accent'
                     )}
-                    onClick={() => navigate(item.path)}
                   >
-                    <item.icon className="h-5 w-5" />
-                    {!collapsed && <span>{item.title}</span>}
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-      
-      <SidebarFooter>
-        <div className="p-4">
-          <div className="flex items-center gap-3">
-            <Avatar>
-              <AvatarImage src="" />
-              <AvatarFallback>
-                {user ? getInitials(user.name) : '?'}
-              </AvatarFallback>
-            </Avatar>
-            {!collapsed && (
-              <div className="flex-1 overflow-hidden">
-                <p className="text-sm font-medium leading-none truncate">
-                  {user?.name}
-                </p>
-                <p className="text-xs text-muted-foreground truncate">
-                  {user?.email}
-                </p>
-              </div>
-            )}
-          </div>
-          
-          <Button
-            variant="ghost"
-            className={cn(
-              "w-full mt-4 justify-start",
-              collapsed && "px-0 justify-center"
-            )}
-            onClick={handleSignOut}
+                    <div className="flex items-center">
+                      <item.icon className="h-5 w-5 mr-2" />
+                      {!collapsed && <span>{item.title}</span>}
+                    </div>
+                    {!collapsed && (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className={cn(
+                          'h-4 w-4 transition-transform',
+                          openSubmenu === item.href && 'rotate-180'
+                        )}
+                      >
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                      </svg>
+                    )}
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="pl-10">
+                  {!collapsed && item.submenu.map((subitem) => (
+                    <Button
+                      key={subitem.href}
+                      variant="ghost"
+                      asChild
+                      className={cn(
+                        'w-full justify-start mb-1',
+                        pathname === subitem.href && 'bg-accent'
+                      )}
+                    >
+                      <Link to={subitem.href}>{subitem.title}</Link>
+                    </Button>
+                  ))}
+                </CollapsibleContent>
+              </Collapsible>
+            ) : (
+              <Button
+                key={item.href}
+                variant="ghost"
+                asChild
+                className={cn(
+                  'h-10 justify-start',
+                  pathname === item.href && 'bg-accent',
+                  collapsed && 'justify-center px-2'
+                )}
+              >
+                <Link to={item.href}>
+                  <item.icon className={cn('h-5 w-5', !collapsed && 'mr-2')} />
+                  {!collapsed && <span>{item.title}</span>}
+                </Link>
+              </Button>
+            )
+          ))}
+        </nav>
+      </ScrollArea>
+      <div className="flex h-12 flex-none items-center justify-center border-t">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setCollapsed(!collapsed)}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className={cn('h-5 w-5 transition-transform', collapsed && 'rotate-180')}
           >
-            <LogOut className="h-5 w-5 mr-2" />
-            {!collapsed && <span>Cerrar sesión</span>}
-          </Button>
-        </div>
-      </SidebarFooter>
-    </Sidebar>
+            {collapsed ? (
+              <>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </>
+            ) : (
+              <>
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </>
+            )}
+          </svg>
+        </Button>
+      </div>
+    </aside>
   );
 }
