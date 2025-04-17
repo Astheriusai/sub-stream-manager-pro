@@ -41,6 +41,11 @@ type PriceList = {
   product_name?: string;
 };
 
+type Product = {
+  id: string;
+  name: string;
+};
+
 export default function PriceList() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -96,7 +101,7 @@ export default function PriceList() {
         .order('name');
       
       if (error) throw error;
-      return data as Array<{id: string, name: string}>;
+      return data as Product[];
     },
   });
 
