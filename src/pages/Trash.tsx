@@ -118,11 +118,13 @@ export default function Trash() {
   // Empty trash mutation
   const emptyTrashMutation = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase
-        .from("trash")
-        .delete()
-        .filter(activeTab !== "all" ? "original_table", "eq", activeTab : "");
-
+      let query = supabase.from("trash").delete();
+      
+      if (activeTab !== "all") {
+        query = query.eq("original_table", activeTab);
+      }
+      
+      const { error } = await query;
       if (error) throw error;
       return true;
     },
