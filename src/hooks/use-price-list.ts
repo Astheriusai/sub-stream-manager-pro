@@ -24,7 +24,7 @@ export function usePriceList(subscriberId: string | undefined) {
       
       return data.map(item => ({
         ...item,
-        product_name: item.products ? item.products.name : undefined
+        product_name: item.products && typeof item.products === 'object' ? item.products.name : undefined
       })) as PriceList[];
     },
     enabled: !!subscriberId,
