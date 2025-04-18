@@ -1,11 +1,6 @@
+
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Key, Mail, User, DatabaseZap } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
   Card,
   CardContent,
@@ -14,69 +9,19 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { useAuth } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
-import { setupDatabase } from '@/lib/db-setup';
-
-const signupSchema = z.object({
-  name: z.string().min(3, 'El nombre debe tener al menos 3 caracteres'),
-  email: z.string().email('Correo electrónico inválido'),
-  password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'Las contraseñas no coinciden',
-  path: ['confirmPassword'],
-});
-
-type SignupFormValues = z.infer<typeof signupSchema>;
+import { SignupForm } from '@/components/auth/SignupForm';
+import { DatabaseSetupButton } from '@/components/auth/DatabaseSetupButton';
 
 export default function Signup() {
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSettingUpDb, setIsSettingUpDb] = useState(false);
   const { toast } = useToast();
   const { signUp } = useAuth();
   const navigate = useNavigate();
-  
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<SignupFormValues>({
-    resolver: zodResolver(signupSchema),
-  });
 
-  const handleDatabaseSetup = async () => {
-    try {
-      setIsSettingUpDb(true);
-      const result = await setupDatabase();
-      
-      if (result.success) {
-        toast({
-          title: 'Base de datos configurada',
-          description: 'Las tablas han sido creadas correctamente.',
-        });
-      } else {
-        toast({
-          title: 'Error',
-          description: result.message,
-          variant: 'destructive',
-        });
-      }
-    } catch (error) {
-      console.error('Database setup error:', error);
-      toast({
-        title: 'Error',
-        description: 'No se pudo configurar la base de datos',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsSettingUpDb(false);
-    }
-  };
-
-  const onSubmit = async (data: SignupFormValues) => {
+  const handleSubmit = async (data: { name: string; email: string; password: string }) => {
     try {
       setIsSubmitting(true);
       const { error } = await signUp(data.name, data.email, data.password);
@@ -117,102 +62,10 @@ export default function Signup() {
           <CardDescription className="text-center">
             Regístrate para comenzar a usar Sub-Stream Manager Pro
           </CardDescription>
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={handleDatabaseSetup}
-            disabled={isSettingUpDb}
-          >
-            <DatabaseZap className="mr-2 h-4 w-4" />
-            {isSettingUpDb ? 'Configurando...' : 'Configurar base de datos'}
-          </Button>
+          <DatabaseSetupButton />
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="space-y-2">
-              <div className="relative">
-                <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="name"
-                  placeholder="Nombre completo"
-                  className="pl-10"
-                  {...register('name')}
-                />
-              </div>
-              {errors.name && (
-                <p className="text-sm text-destructive">{errors.name.message}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="email"
-                  placeholder="Correo electrónico"
-                  className="pl-10"
-                  {...register('email')}
-                />
-              </div>
-              {errors.email && (
-                <p className="text-sm text-destructive">{errors.email.message}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <div className="relative">
-                <Key className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="Contraseña"
-                  className="pl-10 pr-10"
-                  {...register('password')}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
-              {errors.password && (
-                <p className="text-sm text-destructive">{errors.password.message}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <div className="relative">
-                <Key className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="confirmPassword"
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  placeholder="Confirmar contraseña"
-                  className="pl-10 pr-10"
-                  {...register('confirmPassword')}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
-              {errors.confirmPassword && (
-                <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
-              )}
-            </div>
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? 'Creando cuenta...' : 'Registrarse'}
-            </Button>
-          </form>
+          <SignupForm onSubmit={handleSubmit} isSubmitting={isSubmitting} />
         </CardContent>
         <CardFooter className="flex flex-col">
           <p className="text-center text-sm text-muted-foreground">
