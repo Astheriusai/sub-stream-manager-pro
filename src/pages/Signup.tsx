@@ -1,10 +1,9 @@
-
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Key, Mail, User } from 'lucide-react';
+import { Eye, EyeOff, Key, Mail, User, DatabaseZap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -17,6 +16,7 @@ import {
 } from '@/components/ui/card';
 import { useAuth } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
+import { setupDatabase } from '@/lib/db-setup';
 
 const signupSchema = z.object({
   name: z.string().min(3, 'El nombre debe tener al menos 3 caracteres'),
@@ -34,6 +34,7 @@ export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSettingUpDb, setIsSettingUpDb] = useState(false);
   const { toast } = useToast();
   const { signUp } = useAuth();
   const navigate = useNavigate();
@@ -45,6 +46,35 @@ export default function Signup() {
   } = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
   });
+
+  const handleDatabaseSetup = async () => {
+    try {
+      setIsSettingUpDb(true);
+      const result = await setupDatabase();
+      
+      if (result.success) {
+        toast({
+          title: 'Base de datos configurada',
+          description: 'Las tablas han sido creadas correctamente.',
+        });
+      } else {
+        toast({
+          title: 'Error',
+          description: result.message,
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('Database setup error:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudo configurar la base de datos',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSettingUpDb(false);
+    }
+  };
 
   const onSubmit = async (data: SignupFormValues) => {
     try {
@@ -59,10 +89,9 @@ export default function Signup() {
           variant: 'destructive',
         });
       } else {
-        // Even if the tables don't exist yet, we'll consider this a successful signup
         toast({
           title: 'Registro exitoso',
-          description: 'Tu cuenta ha sido creada. Es posible que necesites ejecutar la configuración del sistema primero.',
+          description: 'Tu cuenta ha sido creada. Ahora puedes iniciar sesión.',
         });
         navigate('/login');
       }
@@ -88,6 +117,15 @@ export default function Signup() {
           <CardDescription className="text-center">
             Regístrate para comenzar a usar Sub-Stream Manager Pro
           </CardDescription>
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={handleDatabaseSetup}
+            disabled={isSettingUpDb}
+          >
+            <DatabaseZap className="mr-2 h-4 w-4" />
+            {isSettingUpDb ? 'Configurando...' : 'Configurar base de datos'}
+          </Button>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
