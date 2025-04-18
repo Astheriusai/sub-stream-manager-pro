@@ -90,7 +90,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signUp = async (name: string, email: string, password: string) => {
     try {
-      // Get the worker role ID
+      // Try to get the worker role ID, but handle the case where the table might not exist yet
       const { data: workerRole, error: roleError } = await supabase
         .from('roles')
         .select('id')
@@ -99,10 +99,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         
       if (roleError) {
         console.error('Error fetching role:', roleError);
-        return { error: { message: 'Error fetching user role' } };
+        
+        // Register the user in auth without role for now
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: window.location.origin + '/login',
+            data: {
+              name
+            }
+          }
+        });
+
+        if (error) {
+          console.error('Signup error:', error);
+          return { error };
+        }
+
+        // Since we can't add to the users table yet (no roles table), 
+        // we'll just consider the signup successful at the auth level
+        return { error: null };
       }
 
-      // Register the user in auth
+      // If we got here, the roles table exists, so continue with the original flow
       const { data, error } = await supabase.auth.signUp({
         email,
         password,

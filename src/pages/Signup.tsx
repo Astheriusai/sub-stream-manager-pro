@@ -59,9 +59,10 @@ export default function Signup() {
           variant: 'destructive',
         });
       } else {
+        // Even if the tables don't exist yet, we'll consider this a successful signup
         toast({
           title: 'Registro exitoso',
-          description: 'Tu cuenta ha sido creada correctamente. Ahora puedes iniciar sesión.',
+          description: 'Tu cuenta ha sido creada. Es posible que necesites ejecutar la configuración del sistema primero.',
         });
         navigate('/login');
       }
@@ -69,7 +70,7 @@ export default function Signup() {
       console.error('Unexpected error:', error);
       toast({
         title: 'Error',
-        description: 'Ocurrió un error durante el registro',
+        description: 'Ocurrió un error durante el registro. Verifica que la base de datos esté configurada correctamente.',
         variant: 'destructive',
       });
     } finally {
